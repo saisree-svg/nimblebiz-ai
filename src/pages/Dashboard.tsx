@@ -2,6 +2,7 @@ import { StatsCard } from "@/components/StatsCard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
+import { AuthCheck } from "@/components/AuthCheck";
 import { 
   IndianRupee, 
   Package, 
@@ -10,14 +11,17 @@ import {
   Plus,
   LogOut,
   BarChart3,
-  QrCode
+  QrCode,
+  Settings as SettingsIcon
 } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const Dashboard = () => {
   const navigate = useNavigate();
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     toast.success("Logged out successfully");
     navigate("/");
   };
@@ -36,6 +40,7 @@ const Dashboard = () => {
   ];
 
   return (
+    <AuthCheck>
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b bg-card shadow-sm sticky top-0 z-10">
@@ -83,7 +88,7 @@ const Dashboard = () => {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
+        <div className="grid md:grid-cols-4 gap-6 mb-8">
           <Button 
             className="h-24 text-lg" 
             onClick={() => navigate("/inventory")}
@@ -94,10 +99,18 @@ const Dashboard = () => {
           <Button 
             className="h-24 text-lg"
             variant="secondary"
-            onClick={() => toast.info("UPI Payment feature coming soon!")}
+            onClick={() => navigate("/upi-payment")}
           >
             <QrCode className="mr-2 h-6 w-6" />
             UPI Payment
+          </Button>
+          <Button 
+            className="h-24 text-lg"
+            variant="outline"
+            onClick={() => navigate("/settings")}
+          >
+            <SettingsIcon className="mr-2 h-6 w-6" />
+            UPI Settings
           </Button>
           <Button 
             className="h-24 text-lg"
@@ -173,6 +186,7 @@ const Dashboard = () => {
         </div>
       </div>
     </div>
+    </AuthCheck>
   );
 };
 

@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
+import { AuthCheck } from "@/components/AuthCheck";
 import { ArrowLeft, Search, Plus, Pencil, Trash2, Package } from "lucide-react";
 import { toast } from "sonner";
 
@@ -48,6 +49,7 @@ const Inventory = () => {
   };
 
   return (
+    <AuthCheck>
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b bg-card shadow-sm sticky top-0 z-10">
@@ -161,6 +163,7 @@ const Inventory = () => {
         </Card>
       </div>
     </div>
+    </AuthCheck>
   );
 };
 

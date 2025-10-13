@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,33 +7,78 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Store, ArrowLeft } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const Login = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
 
+  useEffect(() => {
+    // Check if user is already logged in
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        navigate("/dashboard");
+      }
+    });
+  }, [navigate]);
+
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Simulate login
-    setTimeout(() => {
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+
       toast.success("Welcome back!");
       navigate("/dashboard");
+    } catch (error: any) {
+      console.error("Login error:", error);
+      toast.error(error.message || "Failed to login");
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Simulate registration
-    setTimeout(() => {
-      toast.success("Account created successfully!");
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+    const shopName = formData.get("shopName") as string;
+
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/dashboard`,
+          data: {
+            shop_name: shopName,
+          },
+        },
+      });
+
+      if (error) throw error;
+
+      toast.success("Account created! Please check your email to verify.");
       navigate("/dashboard");
+    } catch (error: any) {
+      console.error("Registration error:", error);
+      toast.error(error.message || "Failed to create account");
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -74,6 +119,7 @@ const Login = () => {
                     <Label htmlFor="login-email">Email</Label>
                     <Input
                       id="login-email"
+                      name="email"
                       type="email"
                       placeholder="your@email.com"
                       required
@@ -83,19 +129,17 @@ const Login = () => {
                     <Label htmlFor="login-password">Password</Label>
                     <Input
                       id="login-password"
+                      name="password"
                       type="password"
                       placeholder="••••••••"
                       required
                     />
                   </div>
                 </CardContent>
-                <CardFooter className="flex flex-col space-y-4">
+                <CardFooter>
                   <Button type="submit" className="w-full" disabled={isLoading}>
                     {isLoading ? "Signing in..." : "Sign In"}
                   </Button>
-                  <p className="text-sm text-muted-foreground text-center">
-                    Demo credentials work with any email/password
-                  </p>
                 </CardFooter>
               </form>
             </TabsContent>
@@ -107,6 +151,7 @@ const Login = () => {
                     <Label htmlFor="register-name">Shop Name</Label>
                     <Input
                       id="register-name"
+                      name="shopName"
                       placeholder="My Shop"
                       required
                     />
@@ -115,6 +160,7 @@ const Login = () => {
                     <Label htmlFor="register-email">Email</Label>
                     <Input
                       id="register-email"
+                      name="email"
                       type="email"
                       placeholder="your@email.com"
                       required
@@ -124,8 +170,10 @@ const Login = () => {
                     <Label htmlFor="register-password">Password</Label>
                     <Input
                       id="register-password"
+                      name="password"
                       type="password"
                       placeholder="••••••••"
+                      minLength={6}
                       required
                     />
                   </div>
