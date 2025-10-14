@@ -13,6 +13,7 @@ const Settings = () => {
   const [loading, setLoading] = useState(false);
   const [shopName, setShopName] = useState("");
   const [upiId, setUpiId] = useState("");
+  const [location, setLocation] = useState("");
   const [hasExisting, setHasExisting] = useState(false);
 
   useEffect(() => {
@@ -39,6 +40,7 @@ const Settings = () => {
       if (data) {
         setShopName(data.shop_name);
         setUpiId(data.upi_id);
+        setLocation(data.location || "");
         setHasExisting(true);
       }
     } catch (error: any) {
@@ -59,6 +61,7 @@ const Settings = () => {
         user_id: user.id,
         shop_name: shopName,
         upi_id: upiId,
+        location: location,
       };
 
       let error;
@@ -140,6 +143,19 @@ const Settings = () => {
                 />
                 <p className="text-xs text-muted-foreground">
                   Enter your UPI ID (e.g., yourname@paytm, yourname@upi)
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="location">Shop Location</Label>
+                <Input
+                  id="location"
+                  placeholder="Enter your shop location"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Your shop address or location
                 </p>
               </div>
 

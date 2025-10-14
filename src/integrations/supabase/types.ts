@@ -14,10 +14,88 @@ export type Database = {
   }
   public: {
     Tables: {
+      cart: {
+        Row: {
+          created_at: string | null
+          id: string
+          inventory_id: string
+          quantity: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          inventory_id: string
+          quantity?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          inventory_id?: string
+          quantity?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cart_inventory_id_fkey"
+            columns: ["inventory_id"]
+            isOneToOne: false
+            referencedRelation: "inventory"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inventory: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          image_url: string | null
+          minimum_stock: number
+          name: string
+          price: number
+          stock: number
+          unit: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          minimum_stock?: number
+          name: string
+          price: number
+          stock?: number
+          unit: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          minimum_stock?: number
+          name?: string
+          price?: number
+          stock?: number
+          unit?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       shop_settings: {
         Row: {
           created_at: string
           id: string
+          location: string | null
           shop_name: string
           updated_at: string
           upi_id: string
@@ -26,6 +104,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          location?: string | null
           shop_name: string
           updated_at?: string
           upi_id: string
@@ -34,6 +113,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          location?: string | null
           shop_name?: string
           updated_at?: string
           upi_id?: string
