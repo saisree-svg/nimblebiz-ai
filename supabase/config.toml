@@ -1,4 +1,10 @@
 project_id = "punmtbzmdhgmahovwnot"
 
 [functions.generate-product-image]
-verify_jwt = true
+verify_jwt = false
+
+[functions.process-stock-file]
+verify_jwt = false
+
+[functions.generate-analytics]
+verify_jwt = false

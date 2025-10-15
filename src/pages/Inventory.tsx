@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useNavigate } from "react-router-dom";
 import { AuthCheck } from "@/components/AuthCheck";
-import { ArrowLeft, Search, Plus, Pencil, Trash2, Package, Sparkles, ShoppingCart } from "lucide-react";
+import { ArrowLeft, Search, Plus, Pencil, Trash2, Package, Sparkles, ShoppingCart, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -31,7 +31,10 @@ const Inventory = () => {
   const [items, setItems] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
   const [generatingImage, setGeneratingImage] = useState(false);
+  const [processingFile, setProcessingFile] = useState(false);
+  const [extractedProducts, setExtractedProducts] = useState<any[]>([]);
   
   // Form state
   const [formData, setFormData] = useState({
@@ -165,6 +168,84 @@ const Inventory = () => {
     }
   };
 
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setProcessingFile(true);
+    try {
+      const text = await file.text();
+      
+      const { data, error } = await supabase.functions.invoke('process-stock-file', {
+        body: { 
+          fileContent: text,
+          fileName: file.name 
+        }
+      });
+
+      if (error) throw error;
+      
+      if (data.products) {
+        setExtractedProducts(data.products);
+        toast.success(`Extracted ${data.products.length} products from file`);
+      }
+    } catch (error) {
+      console.error('Error processing file:', error);
+      toast.error('Failed to process file');
+    } finally {
+      setProcessingFile(false);
+    }
+  };
+
+  const handleSaveExtractedProducts = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Generate images for products in parallel
+      const productsWithImages = await Promise.all(
+        extractedProducts.map(async (product) => {
+          try {
+            const { data: imageData } = await supabase.functions.invoke('generate-product-image', {
+              body: { 
+                productName: product.name,
+                category: product.category 
+              }
+            });
+            
+            return {
+              ...product,
+              image_url: imageData?.imageUrl || null,
+              user_id: user.id
+            };
+          } catch (error) {
+            console.error(`Failed to generate image for ${product.name}:`, error);
+            return {
+              ...product,
+              image_url: null,
+              user_id: user.id
+            };
+          }
+        })
+      );
+
+      const { data, error } = await supabase
+        .from('inventory')
+        .insert(productsWithImages)
+        .select();
+
+      if (error) throw error;
+      
+      setItems([...data, ...items]);
+      setExtractedProducts([]);
+      setIsUploadDialogOpen(false);
+      toast.success('Products added successfully with AI-generated images');
+    } catch (error) {
+      console.error('Error saving products:', error);
+      toast.error('Failed to save products');
+    }
+  };
+
   const handleAddToBill = async (item: InventoryItem) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -211,6 +292,62 @@ const Inventory = () => {
                   <ShoppingCart className="mr-2 h-4 w-4" />
                   View Cart
                 </Button>
+                <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline">
+                      <Upload className="mr-2 h-4 w-4" />
+                      Upload Stock File
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle>Upload Stock File</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="file">Select File (CSV, TXT, or any text format)</Label>
+                        <Input
+                          id="file"
+                          type="file"
+                          accept=".csv,.txt,.text"
+                          onChange={handleFileUpload}
+                          disabled={processingFile}
+                        />
+                        {processingFile && <p className="text-sm text-muted-foreground">Processing file with AI...</p>}
+                      </div>
+                      
+                      {extractedProducts.length > 0 && (
+                        <>
+                          <div className="rounded-md border">
+                            <Table>
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead>Name</TableHead>
+                                  <TableHead>Description</TableHead>
+                                  <TableHead>Stock</TableHead>
+                                  <TableHead>Price</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {extractedProducts.map((product, index) => (
+                                  <TableRow key={index}>
+                                    <TableCell>{product.name}</TableCell>
+                                    <TableCell className="max-w-xs truncate">{product.description}</TableCell>
+                                    <TableCell>{product.stock} {product.unit}</TableCell>
+                                    <TableCell>₹{product.price}</TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          </div>
+                          <Button onClick={handleSaveExtractedProducts} className="w-full">
+                            Save All Products (AI will generate images)
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  </DialogContent>
+                </Dialog>
                 <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
                   <DialogTrigger asChild>
                     <Button>

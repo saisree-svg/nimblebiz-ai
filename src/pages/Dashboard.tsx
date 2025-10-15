@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { StatsCard } from "@/components/StatsCard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,7 +12,7 @@ import {
   Plus,
   LogOut,
   BarChart3,
-  QrCode,
+  ShoppingCart,
   Settings as SettingsIcon
 } from "lucide-react";
 import { toast } from "sonner";
@@ -19,6 +20,69 @@ import { supabase } from "@/integrations/supabase/client";
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const [stats, setStats] = useState({
+    todaySales: 0,
+    totalItems: 0,
+    lowStockCount: 0,
+    weekSales: 0
+  });
+  const [recentTransactions, setRecentTransactions] = useState<any[]>([]);
+  const [lowStockItems, setLowStockItems] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  const fetchDashboardData = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Fetch inventory stats
+      const { data: inventory } = await supabase
+        .from('inventory')
+        .select('*')
+        .eq('user_id', user.id);
+
+      // Fetch transactions
+      const { data: transactions } = await supabase
+        .from('transactions')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      // Calculate stats
+      const totalItems = inventory?.length || 0;
+      const lowStock = inventory?.filter(item => item.stock <= item.minimum_stock) || [];
+      
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const todayTransactions = transactions?.filter(t => new Date(t.created_at) >= today) || [];
+      const todaySales = todayTransactions.reduce((sum, t) => sum + Number(t.total_amount), 0);
+
+      const weekAgo = new Date();
+      weekAgo.setDate(weekAgo.getDate() - 7);
+      const weekTransactions = transactions?.filter(t => new Date(t.created_at) >= weekAgo) || [];
+      const weekSales = weekTransactions.reduce((sum, t) => sum + Number(t.total_amount), 0);
+
+      setStats({
+        todaySales,
+        totalItems,
+        lowStockCount: lowStock.length,
+        weekSales
+      });
+
+      setRecentTransactions(transactions?.slice(0, 4) || []);
+      setLowStockItems(lowStock.slice(0, 3));
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+      toast.error('Failed to load dashboard data');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -26,18 +90,15 @@ const Dashboard = () => {
     navigate("/");
   };
 
-  const recentTransactions = [
-    { id: 1, item: "Rice (1kg)", amount: 45, time: "10 mins ago", type: "sale" },
-    { id: 2, item: "Milk (500ml)", amount: 25, time: "25 mins ago", type: "sale" },
-    { id: 3, item: "Bread", amount: 40, time: "1 hour ago", type: "sale" },
-    { id: 4, item: "Eggs (12)", amount: 72, time: "2 hours ago", type: "sale" },
-  ];
-
-  const lowStockItems = [
-    { id: 1, name: "Sugar", current: 5, min: 10 },
-    { id: 2, name: "Tea Powder", current: 3, min: 8 },
-    { id: 3, name: "Cooking Oil", current: 2, min: 5 },
-  ];
+  if (loading) {
+    return (
+      <AuthCheck>
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <p>Loading dashboard...</p>
+        </div>
+      </AuthCheck>
+    );
+  }
 
   return (
     <AuthCheck>
@@ -61,28 +122,26 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <StatsCard
             title="Today's Sales"
-            value="₹2,845"
+            value={`₹${stats.todaySales.toFixed(2)}`}
             icon={IndianRupee}
-            trend={{ value: "12% from yesterday", isPositive: true }}
             variant="success"
           />
           <StatsCard
             title="Total Items"
-            value="156"
+            value={stats.totalItems.toString()}
             icon={Package}
             variant="default"
           />
           <StatsCard
             title="Low Stock Alerts"
-            value="3"
+            value={stats.lowStockCount.toString()}
             icon={AlertTriangle}
             variant="warning"
           />
           <StatsCard
             title="This Week"
-            value="₹18,420"
+            value={`₹${stats.weekSales.toFixed(2)}`}
             icon={TrendingUp}
-            trend={{ value: "8% from last week", isPositive: true }}
             variant="success"
           />
         </div>
@@ -99,10 +158,10 @@ const Dashboard = () => {
           <Button 
             className="h-24 text-lg"
             variant="secondary"
-            onClick={() => navigate("/upi-payment")}
+            onClick={() => navigate("/billing")}
           >
-            <QrCode className="mr-2 h-6 w-6" />
-            UPI Payment
+            <ShoppingCart className="mr-2 h-6 w-6" />
+            Billing
           </Button>
           <Button 
             className="h-24 text-lg"
@@ -110,12 +169,12 @@ const Dashboard = () => {
             onClick={() => navigate("/settings")}
           >
             <SettingsIcon className="mr-2 h-6 w-6" />
-            UPI Settings
+            Settings
           </Button>
           <Button 
             className="h-24 text-lg"
             variant="outline"
-            onClick={() => toast.info("Analytics feature coming soon!")}
+            onClick={() => navigate("/analytics")}
           >
             <BarChart3 className="mr-2 h-6 w-6" />
             View Analytics
@@ -128,28 +187,38 @@ const Dashboard = () => {
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 Recent Transactions
-                <Button size="sm" variant="ghost">
+                <Button size="sm" variant="ghost" onClick={() => navigate("/analytics")}>
                   View All
                 </Button>
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {recentTransactions.map((transaction) => (
-                  <div 
-                    key={transaction.id} 
-                    className="flex justify-between items-center p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
-                  >
-                    <div>
-                      <p className="font-medium">{transaction.item}</p>
-                      <p className="text-xs text-muted-foreground">{transaction.time}</p>
+              {recentTransactions.length === 0 ? (
+                <p className="text-center text-muted-foreground py-8">No transactions yet</p>
+              ) : (
+                <div className="space-y-4">
+                  {recentTransactions.map((transaction) => (
+                    <div 
+                      key={transaction.id} 
+                      className="flex justify-between items-center p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+                    >
+                      <div>
+                        <p className="font-medium">
+                          {transaction.items?.[0]?.name || 'Multiple items'}
+                          {transaction.items?.length > 1 && ` +${transaction.items.length - 1} more`}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(transaction.created_at).toLocaleString()}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-semibold text-success">+₹{Number(transaction.total_amount).toFixed(2)}</p>
+                        <p className="text-xs text-muted-foreground">{transaction.payment_method}</p>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className="font-semibold text-success">+₹{transaction.amount}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -162,25 +231,33 @@ const Dashboard = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {lowStockItems.map((item) => (
-                  <div 
-                    key={item.id} 
-                    className="flex justify-between items-center p-3 rounded-lg bg-warning/10 border border-warning/20"
-                  >
-                    <div>
-                      <p className="font-medium">{item.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        Current: {item.current} units
-                      </p>
+              {lowStockItems.length === 0 ? (
+                <p className="text-center text-muted-foreground py-8">All items well stocked!</p>
+              ) : (
+                <div className="space-y-4">
+                  {lowStockItems.map((item) => (
+                    <div 
+                      key={item.id} 
+                      className="flex justify-between items-center p-3 rounded-lg bg-warning/10 border border-warning/20"
+                    >
+                      <div>
+                        <p className="font-medium">{item.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          Current: {item.stock} {item.unit} (Min: {item.minimum_stock})
+                        </p>
+                      </div>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => navigate("/inventory")}
+                      >
+                        <Plus className="h-4 w-4 mr-1" />
+                        Restock
+                      </Button>
                     </div>
-                    <Button size="sm" variant="outline">
-                      <Plus className="h-4 w-4 mr-1" />
-                      Restock
-                    </Button>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
