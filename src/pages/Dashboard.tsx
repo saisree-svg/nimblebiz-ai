@@ -6,16 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { AuthCheck } from "@/components/AuthCheck";
+import Header from "@/components/Header";
 import { 
   IndianRupee, 
   Package, 
   AlertTriangle, 
   TrendingUp,
   Plus,
-  LogOut,
-  BarChart3,
-  ShoppingCart,
-  Settings as SettingsIcon,
   Sparkles
 } from "lucide-react";
 import { toast } from "sonner";
@@ -87,11 +84,6 @@ const Dashboard = () => {
     }
   };
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    toast.success("Logged out successfully");
-    navigate("/");
-  };
 
   if (loading) {
     return (
@@ -106,39 +98,14 @@ const Dashboard = () => {
   return (
     <AuthCheck>
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 relative overflow-hidden">
+      <Header />
+      
       {/* Animated background elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 -left-48 w-96 h-96 bg-primary/20 rounded-full blur-3xl animate-pulse-slow" />
         <div className="absolute bottom-1/4 -right-48 w-96 h-96 bg-secondary/20 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '1s' }} />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-accent/10 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '2s' }} />
       </div>
-
-      {/* Header */}
-      <header className="relative border-b border-primary/20 bg-card/50 backdrop-blur-xl shadow-glow sticky top-0 z-20">
-        <div className="container mx-auto px-4 py-5">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-xl bg-gradient-to-br from-primary via-accent to-secondary shadow-glow animate-glow-pulse">
-                <Sparkles className="h-6 w-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-3xl font-extrabold bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent">
-                  SmartShop Manager
-                </h1>
-                <p className="text-sm text-muted-foreground font-medium">AI-Powered Business Control Center</p>
-              </div>
-            </div>
-            <Button 
-              variant="outline" 
-              onClick={handleLogout}
-              className="border-2 border-primary/30 hover:border-primary/50 hover:shadow-cyber transition-all duration-300"
-            >
-              <LogOut className="mr-2 h-4 w-4" />
-              Logout
-            </Button>
-          </div>
-        </div>
-      </header>
 
       <div className="relative container mx-auto px-4 py-8 space-y-8">
         {/* Stats Grid */}
@@ -180,43 +147,6 @@ const Dashboard = () => {
         {/* Smart Insights Card */}
         <SmartInsightsCard />
 
-        {/* Quick Actions */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Button 
-            size="lg"
-            className="h-28 flex flex-col gap-2 bg-gradient-to-br from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-glow hover:shadow-cyber hover:scale-105 transition-all duration-300 border-2 border-primary/30"
-            onClick={() => navigate("/inventory")}
-          >
-            <Package className="h-8 w-8" />
-            <span className="text-base font-bold">Manage Inventory</span>
-          </Button>
-          <Button 
-            size="lg"
-            className="h-28 flex flex-col gap-2 bg-gradient-to-br from-secondary to-secondary/80 hover:from-secondary/90 hover:to-secondary/70 shadow-[0_0_20px_hsl(189_94%_53%/0.4)] hover:shadow-[0_0_30px_hsl(189_94%_53%/0.6)] hover:scale-105 transition-all duration-300 border-2 border-secondary/30"
-            onClick={() => navigate("/billing")}
-          >
-            <ShoppingCart className="h-8 w-8" />
-            <span className="text-base font-bold">Billing</span>
-          </Button>
-          <Button 
-            size="lg"
-            variant="outline"
-            className="h-28 flex flex-col gap-2 border-2 border-accent/30 hover:border-accent/50 bg-accent/5 hover:bg-accent/10 hover:shadow-neon hover:scale-105 transition-all duration-300"
-            onClick={() => navigate("/settings")}
-          >
-            <SettingsIcon className="h-8 w-8 text-accent" />
-            <span className="text-base font-bold text-accent">Settings</span>
-          </Button>
-          <Button 
-            size="lg"
-            variant="outline"
-            className="h-28 flex flex-col gap-2 border-2 border-lime/30 hover:border-lime/50 bg-lime/5 hover:bg-lime/10 hover:shadow-[0_0_20px_hsl(84_81%_59%/0.4)] hover:scale-105 transition-all duration-300"
-            onClick={() => navigate("/analytics")}
-          >
-            <BarChart3 className="h-8 w-8 text-lime" />
-            <span className="text-base font-bold text-lime">Analytics</span>
-          </Button>
-        </div>
 
         <div className="grid md:grid-cols-2 gap-6">
           {/* Recent Transactions */}

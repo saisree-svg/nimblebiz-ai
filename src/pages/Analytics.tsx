@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { AuthCheck } from "@/components/AuthCheck";
-import { ArrowLeft, BarChart3, TrendingUp, Sparkles, Download } from "lucide-react";
+import Header from "@/components/Header";
+import { BarChart3, TrendingUp, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -148,19 +149,15 @@ const Analytics = () => {
   return (
     <AuthCheck>
       <div className="min-h-screen bg-background">
-        <header className="border-b bg-card shadow-sm sticky top-0 z-10">
-          <div className="container mx-auto px-4 py-4">
+        <Header />
+        <div className="container mx-auto px-4 py-8">
+          <div className="max-w-7xl mx-auto space-y-8">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <Button variant="ghost" onClick={() => navigate("/dashboard")}>
-                  <ArrowLeft className="h-4 w-4" />
-                </Button>
-                <div>
-                  <h1 className="text-2xl font-bold">Analytics</h1>
-                  <p className="text-sm text-muted-foreground">
-                    Business insights and performance
-                  </p>
-                </div>
+              <div>
+                <h1 className="text-4xl font-bold">Analytics & Insights</h1>
+                <p className="text-muted-foreground mt-2">
+                  AI-powered business intelligence
+                </p>
               </div>
               <div className="flex gap-2">
                 <Select value={period} onValueChange={(value: any) => setPeriod(value)}>
@@ -179,10 +176,6 @@ const Analytics = () => {
                 </Button>
               </div>
             </div>
-          </div>
-        </header>
-
-        <div className="container mx-auto px-4 py-8 space-y-6">
           {/* Stats Overview */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <Card>
@@ -283,6 +276,7 @@ const Analytics = () => {
               </CardContent>
             </Card>
           )}
+          </div>
         </div>
       </div>
     </AuthCheck>

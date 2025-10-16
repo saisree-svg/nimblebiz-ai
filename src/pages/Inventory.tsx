@@ -9,7 +9,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useNavigate } from "react-router-dom";
 import { AuthCheck } from "@/components/AuthCheck";
-import { ArrowLeft, Search, Plus, Pencil, Trash2, Package, Sparkles, ShoppingCart, Upload } from "lucide-react";
+import Header from "@/components/Header";
+import { Search, Plus, Pencil, Trash2, Package, Sparkles, ShoppingCart, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -273,25 +274,17 @@ const Inventory = () => {
   return (
     <AuthCheck>
       <div className="min-h-screen bg-background">
-        <header className="border-b bg-card shadow-sm sticky top-0 z-10">
-          <div className="container mx-auto px-4 py-4">
+        <Header />
+        <div className="container mx-auto px-4 py-8">
+          <div className="max-w-7xl mx-auto space-y-8">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <Button variant="ghost" onClick={() => navigate("/dashboard")}>
-                  <ArrowLeft className="h-4 w-4" />
-                </Button>
-                <div>
-                  <h1 className="text-2xl font-bold">Inventory Management</h1>
-                  <p className="text-sm text-muted-foreground">
-                    {filteredItems.length} items in stock
-                  </p>
-                </div>
+              <div>
+                <h1 className="text-4xl font-bold">Inventory Management</h1>
+                <p className="text-muted-foreground mt-2">
+                  {filteredItems.length} items in stock
+                </p>
               </div>
               <div className="flex gap-2">
-                <Button onClick={() => navigate("/billing")} variant="outline">
-                  <ShoppingCart className="mr-2 h-4 w-4" />
-                  View Cart
-                </Button>
                 <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
                   <DialogTrigger asChild>
                     <Button variant="outline">
@@ -466,11 +459,8 @@ const Inventory = () => {
                 </Dialog>
               </div>
             </div>
-          </div>
-        </header>
 
-        <div className="container mx-auto px-4 py-8">
-          <Card className="mb-6">
+            <Card className="mb-6">
             <CardContent className="pt-6">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -573,6 +563,7 @@ const Inventory = () => {
               )}
             </CardContent>
           </Card>
+          </div>
         </div>
       </div>
     </AuthCheck>

@@ -5,7 +5,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useNavigate } from "react-router-dom";
 import { AuthCheck } from "@/components/AuthCheck";
-import { ArrowLeft, Trash2, ShoppingCart, CreditCard } from "lucide-react";
+import Header from "@/components/Header";
+import { Trash2, ShoppingCart, CreditCard } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { QRCodeSVG } from 'qrcode.react';
@@ -171,25 +172,15 @@ const Billing = () => {
   return (
     <AuthCheck>
       <div className="min-h-screen bg-background">
-        <header className="border-b bg-card shadow-sm sticky top-0 z-10">
-          <div className="container mx-auto px-4 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <Button variant="ghost" onClick={() => navigate("/inventory")}>
-                  <ArrowLeft className="h-4 w-4" />
-                </Button>
-                <div>
-                  <h1 className="text-2xl font-bold">Billing</h1>
-                  <p className="text-sm text-muted-foreground">
-                    {cartItems.length} items in cart
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </header>
-
+        <Header />
         <div className="container mx-auto px-4 py-8">
+          <div className="max-w-7xl mx-auto space-y-8">
+            <div>
+              <h1 className="text-4xl font-bold">Billing</h1>
+              <p className="text-muted-foreground mt-2">
+                {cartItems.length} items in cart
+              </p>
+            </div>
           <Card className="animate-fade-in">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -324,6 +315,7 @@ const Billing = () => {
               </div>
             </DialogContent>
           </Dialog>
+          </div>
         </div>
       </div>
     </AuthCheck>
