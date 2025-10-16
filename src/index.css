@@ -2,6 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;800&family=Inter:wght@400;500;600&family=Roboto+Mono:wght@400;500;600&display=swap');
+
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
 All colors MUST be HSL.
 */
@@ -17,10 +19,10 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
 
-    --primary: 217 91% 60%;
+    --primary: 239 84% 67%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 96%;
+    --secondary: 189 94% 53%;
     --secondary-foreground: 222 47% 11%;
 
     --success: 142 71% 45%;
@@ -32,60 +34,63 @@ All colors MUST be HSL.
     --muted: 210 40% 96%;
     --muted-foreground: 215 16% 47%;
 
-    --accent: 217 91% 60%;
+    --accent: 330 81% 60%;
     --accent-foreground: 0 0% 100%;
+
+    --lime: 84 81% 59%;
+    --lime-foreground: 222 47% 11%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
     --border: 214 32% 91%;
     --input: 214 32% 91%;
-    --ring: 217 91% 60%;
+    --ring: 239 84% 67%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
-    --gradient-primary: linear-gradient(135deg, hsl(217 91% 60%) 0%, hsl(217 91% 70%) 100%);
-    --gradient-success: linear-gradient(135deg, hsl(142 71% 45%) 0%, hsl(142 71% 55%) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(239 84% 67%) 0%, hsl(189 94% 53%) 100%);
+    --gradient-neon: linear-gradient(135deg, hsl(239 84% 67%) 0%, hsl(271 91% 65%) 50%, hsl(330 81% 60%) 100%);
+    --gradient-cyber: linear-gradient(135deg, hsl(189 94% 53%) 0%, hsl(239 84% 67%) 100%);
+    --gradient-glow: linear-gradient(135deg, hsl(330 81% 60%) 0%, hsl(271 91% 65%) 100%);
+    --gradient-success: linear-gradient(135deg, hsl(142 71% 45%) 0%, hsl(84 81% 59%) 100%);
     --gradient-card: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(210 40% 99%) 100%);
     
     --shadow-sm: 0 1px 2px 0 hsl(222 47% 11% / 0.05);
     --shadow-md: 0 4px 6px -1px hsl(222 47% 11% / 0.1), 0 2px 4px -1px hsl(222 47% 11% / 0.06);
     --shadow-lg: 0 10px 15px -3px hsl(222 47% 11% / 0.1), 0 4px 6px -2px hsl(222 47% 11% / 0.05);
+    --shadow-glow: 0 0 20px hsl(239 84% 67% / 0.4), 0 0 40px hsl(189 94% 53% / 0.2);
+    --shadow-neon: 0 0 10px hsl(330 81% 60% / 0.5), 0 0 20px hsl(330 81% 60% / 0.3);
+    --shadow-cyber: 0 0 20px hsl(189 94% 53% / 0.3), 0 0 40px hsl(239 84% 67% / 0.2);
     
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-ring: 239 84% 67%;
   }
 
   .dark {
-    --background: 222 47% 11%;
+    --background: 222 84% 5%;
     --foreground: 210 40% 98%;
 
-    --card: 222 47% 13%;
+    --card: 222 47% 10%;
     --card-foreground: 210 40% 98%;
 
-    --popover: 222 47% 13%;
+    --popover: 222 47% 10%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 217 91% 60%;
+    --primary: 239 84% 67%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 217 33% 18%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 189 94% 53%;
+    --secondary-foreground: 0 0% 100%;
 
     --success: 142 71% 45%;
     --success-foreground: 0 0% 100%;
@@ -93,26 +98,41 @@ All colors MUST be HSL.
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
 
-    --muted: 217 33% 18%;
+    --muted: 217 33% 15%;
     --muted-foreground: 215 20% 65%;
 
-    --accent: 217 91% 60%;
+    --accent: 330 81% 60%;
     --accent-foreground: 0 0% 100%;
+
+    --lime: 84 81% 59%;
+    --lime-foreground: 222 47% 11%;
 
     --destructive: 0 63% 31%;
     --destructive-foreground: 210 40% 98%;
 
     --border: 217 33% 18%;
     --input: 217 33% 18%;
-    --ring: 217 91% 60%;
+    --ring: 239 84% 67%;
+
+    --gradient-primary: linear-gradient(135deg, hsl(239 84% 67%) 0%, hsl(189 94% 53%) 100%);
+    --gradient-neon: linear-gradient(135deg, hsl(239 84% 67%) 0%, hsl(271 91% 65%) 50%, hsl(330 81% 60%) 100%);
+    --gradient-cyber: linear-gradient(135deg, hsl(189 94% 53%) 0%, hsl(239 84% 67%) 100%);
+    --gradient-glow: linear-gradient(135deg, hsl(330 81% 60%) 0%, hsl(271 91% 65%) 100%);
+    --gradient-success: linear-gradient(135deg, hsl(142 71% 45%) 0%, hsl(84 81% 59%) 100%);
+    --gradient-dark: linear-gradient(180deg, hsl(222 84% 5%) 0%, hsl(222 47% 10%) 100%);
+    
+    --shadow-glow: 0 0 20px hsl(239 84% 67% / 0.5), 0 0 40px hsl(189 94% 53% / 0.3);
+    --shadow-neon: 0 0 15px hsl(330 81% 60% / 0.6), 0 0 30px hsl(330 81% 60% / 0.4);
+    --shadow-cyber: 0 0 20px hsl(189 94% 53% / 0.4), 0 0 40px hsl(239 84% 67% / 0.2);
+
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary: 239 84% 67%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 240 3.7% 15.9%;
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-ring: 239 84% 67%;
   }
 }
 
@@ -123,5 +143,10 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   }
 }

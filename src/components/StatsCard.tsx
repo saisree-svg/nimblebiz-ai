@@ -1,4 +1,4 @@
-import { LucideIcon } from "lucide-react";
+import { LucideIcon, TrendingUp, TrendingDown } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface StatsCardProps {
@@ -13,27 +13,60 @@ interface StatsCardProps {
 }
 
 const variantStyles = {
-  default: "bg-primary/10 text-primary",
-  success: "bg-success/10 text-success",
-  warning: "bg-warning/10 text-warning",
-  destructive: "bg-destructive/10 text-destructive",
+  default: {
+    bg: "bg-gradient-to-br from-primary/20 to-secondary/20",
+    text: "text-primary",
+    glow: "shadow-glow hover:shadow-cyber",
+    border: "border-primary/30"
+  },
+  success: {
+    bg: "bg-gradient-to-br from-success/20 to-lime/20",
+    text: "text-success",
+    glow: "shadow-[0_0_20px_hsl(142_71%_45%/0.3)] hover:shadow-[0_0_30px_hsl(142_71%_45%/0.5)]",
+    border: "border-success/30"
+  },
+  warning: {
+    bg: "bg-gradient-to-br from-warning/20 to-accent/20",
+    text: "text-warning",
+    glow: "shadow-[0_0_20px_hsl(38_92%_50%/0.3)] hover:shadow-neon",
+    border: "border-warning/30"
+  },
+  destructive: {
+    bg: "bg-gradient-to-br from-destructive/20 to-accent/20",
+    text: "text-destructive",
+    glow: "shadow-[0_0_20px_hsl(0_84%_60%/0.3)] hover:shadow-[0_0_30px_hsl(0_84%_60%/0.5)]",
+    border: "border-destructive/30"
+  },
 };
 
 export const StatsCard = ({ title, value, icon: Icon, trend, variant = "default" }: StatsCardProps) => {
+  const styles = variantStyles[variant];
+  
   return (
-    <Card className="animate-fade-in hover:shadow-lg transition-shadow">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
-        <div className={`p-2 rounded-lg ${variantStyles[variant]}`}>
-          <Icon className="h-4 w-4" />
+    <Card className={`relative overflow-hidden border-2 ${styles.border} ${styles.glow} backdrop-blur-sm bg-card/80 transition-all duration-500 hover:scale-105 hover:-translate-y-1 animate-fade-in group`}>
+      {/* Animated gradient background */}
+      <div className={`absolute inset-0 ${styles.bg} opacity-50 group-hover:opacity-70 transition-opacity duration-300`} />
+      
+      <CardHeader className="relative flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-semibold text-muted-foreground tracking-wide">{title}</CardTitle>
+        <div className={`p-2.5 rounded-xl ${styles.bg} backdrop-blur-sm border ${styles.border} group-hover:scale-110 group-hover:rotate-6 transition-all duration-300`}>
+          <Icon className={`h-5 w-5 ${styles.text}`} />
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
+      
+      <CardContent className="relative">
+        <div className="text-3xl font-bold bg-gradient-to-br from-foreground to-muted-foreground bg-clip-text text-transparent font-mono tracking-tight">
+          {value}
+        </div>
         {trend && (
-          <p className={`text-xs ${trend.isPositive ? "text-success" : "text-destructive"} mt-1`}>
-            {trend.isPositive ? "↑" : "↓"} {trend.value}
-          </p>
+          <div className={`flex items-center gap-1 mt-2 text-sm font-semibold ${trend.isPositive ? "text-success" : "text-destructive"}`}>
+            {trend.isPositive ? (
+              <TrendingUp className="h-4 w-4 animate-bounce" />
+            ) : (
+              <TrendingDown className="h-4 w-4 animate-bounce" />
+            )}
+            <span>{trend.value}</span>
+          </div>
         )}
       </CardContent>
     </Card>
