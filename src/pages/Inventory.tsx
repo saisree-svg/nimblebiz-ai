@@ -10,7 +10,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { useNavigate } from "react-router-dom";
 import { AuthCheck } from "@/components/AuthCheck";
 import Header from "@/components/Header";
-import { Search, Plus, Pencil, Trash2, Package, Sparkles, ShoppingCart, Upload } from "lucide-react";
+import { AIRestockAssistant } from "@/components/AIRestockAssistant";
+import { Search, Plus, Pencil, Trash2, Package, Sparkles, ShoppingCart, Upload, Save, X, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -36,6 +37,8 @@ const Inventory = () => {
   const [generatingImage, setGeneratingImage] = useState(false);
   const [processingFile, setProcessingFile] = useState(false);
   const [extractedProducts, setExtractedProducts] = useState<any[]>([]);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState<InventoryItem | null>(null);
   
   // Form state
   const [formData, setFormData] = useState({
@@ -79,9 +82,48 @@ const Inventory = () => {
   );
 
   const getStockStatus = (current: number, min: number) => {
-    if (current <= min) return { label: "Low", variant: "destructive" as const };
-    if (current <= min * 1.5) return { label: "Medium", variant: "warning" as const };
-    return { label: "Good", variant: "success" as const };
+    if (current <= min) return { label: "Low Stock", variant: "destructive" as const, showAlert: true };
+    if (current <= min * 1.5) return { label: "Medium", variant: "warning" as const, showAlert: false };
+    return { label: "Good", variant: "success" as const, showAlert: false };
+  };
+
+  const startEdit = (item: InventoryItem) => {
+    setEditingId(item.id);
+    setEditForm({ ...item });
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditForm(null);
+  };
+
+  const saveEdit = async () => {
+    if (!editForm) return;
+
+    try {
+      const { error } = await supabase
+        .from('inventory')
+        .update({
+          name: editForm.name,
+          stock: editForm.stock,
+          price: editForm.price,
+          unit: editForm.unit,
+          description: editForm.description,
+          category: editForm.category,
+          minimum_stock: editForm.minimum_stock
+        })
+        .eq('id', editForm.id);
+
+      if (error) throw error;
+
+      setItems(items.map(item => item.id === editForm.id ? editForm : item));
+      setEditingId(null);
+      setEditForm(null);
+      toast.success("Item updated successfully");
+    } catch (error) {
+      console.error('Error updating item:', error);
+      toast.error('Failed to update item');
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -474,6 +516,9 @@ const Inventory = () => {
             </CardContent>
           </Card>
 
+          {/* AI Restock Assistant */}
+          <AIRestockAssistant />
+
           <Card className="animate-fade-in">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -508,6 +553,8 @@ const Inventory = () => {
                       ) : (
                         filteredItems.map((item) => {
                           const status = getStockStatus(item.stock, item.minimum_stock);
+                          const isEditing = editingId === item.id;
+                          
                           return (
                             <TableRow key={item.id} className="hover:bg-muted/50">
                               <TableCell>
@@ -523,11 +570,56 @@ const Inventory = () => {
                                   </div>
                                 )}
                               </TableCell>
-                              <TableCell className="font-medium">{item.name}</TableCell>
-                              <TableCell>
-                                {item.stock} {item.unit}
+                              <TableCell className="font-medium">
+                                {isEditing ? (
+                                  <Input
+                                    value={editForm?.name || ''}
+                                    onChange={(e) => setEditForm(editForm ? {...editForm, name: e.target.value} : null)}
+                                    className="w-full"
+                                  />
+                                ) : (
+                                  <div className="flex items-center gap-2">
+                                    {item.name}
+                                    {status.showAlert && (
+                                      <Badge variant="destructive" className="animate-pulse-slow flex items-center gap-1">
+                                        <AlertTriangle className="h-3 w-3" />
+                                        Low
+                                      </Badge>
+                                    )}
+                                  </div>
+                                )}
                               </TableCell>
-                              <TableCell>₹{item.price}</TableCell>
+                              <TableCell>
+                                {isEditing ? (
+                                  <div className="flex gap-1">
+                                    <Input
+                                      type="number"
+                                      value={editForm?.stock || 0}
+                                      onChange={(e) => setEditForm(editForm ? {...editForm, stock: parseFloat(e.target.value)} : null)}
+                                      className="w-20"
+                                    />
+                                    <Input
+                                      value={editForm?.unit || ''}
+                                      onChange={(e) => setEditForm(editForm ? {...editForm, unit: e.target.value} : null)}
+                                      className="w-16"
+                                    />
+                                  </div>
+                                ) : (
+                                  `${item.stock} ${item.unit}`
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                {isEditing ? (
+                                  <Input
+                                    type="number"
+                                    value={editForm?.price || 0}
+                                    onChange={(e) => setEditForm(editForm ? {...editForm, price: parseFloat(e.target.value)} : null)}
+                                    className="w-24"
+                                  />
+                                ) : (
+                                  `₹${item.price}`
+                                )}
+                              </TableCell>
                               <TableCell className="font-semibold">
                                 ₹{(item.stock * item.price).toFixed(2)}
                               </TableCell>
@@ -536,21 +628,50 @@ const Inventory = () => {
                               </TableCell>
                               <TableCell className="text-right">
                                 <div className="flex justify-end gap-2">
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    onClick={() => handleAddToBill(item)}
-                                    title="Add to Bill"
-                                  >
-                                    <ShoppingCart className="h-4 w-4" />
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    onClick={() => handleDelete(item.id)}
-                                  >
-                                    <Trash2 className="h-4 w-4 text-destructive" />
-                                  </Button>
+                                  {isEditing ? (
+                                    <>
+                                      <Button
+                                        size="sm"
+                                        variant="default"
+                                        onClick={saveEdit}
+                                      >
+                                        <Save className="h-4 w-4" />
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        onClick={cancelEdit}
+                                      >
+                                        <X className="h-4 w-4" />
+                                      </Button>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        onClick={() => startEdit(item)}
+                                        title="Edit"
+                                      >
+                                        <Pencil className="h-4 w-4" />
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        onClick={() => handleAddToBill(item)}
+                                        title="Add to Bill"
+                                      >
+                                        <ShoppingCart className="h-4 w-4" />
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        onClick={() => handleDelete(item.id)}
+                                      >
+                                        <Trash2 className="h-4 w-4 text-destructive" />
+                                      </Button>
+                                    </>
+                                  )}
                                 </div>
                               </TableCell>
                             </TableRow>

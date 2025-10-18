@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { useNavigate } from "react-router-dom";
 import { AuthCheck } from "@/components/AuthCheck";
 import Header from "@/components/Header";
+import { BillSummary } from "@/components/BillSummary";
 import { Plus, Minus, ShoppingCart, CreditCard, Search, Download, Save, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -41,6 +42,8 @@ const Billing = () => {
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'upi' | null>(null);
   const [isDraft, setIsDraft] = useState(false);
+  const [showBillSummary, setShowBillSummary] = useState(false);
+  const [completedBill, setCompletedBill] = useState<{items: BillItem[], subtotal: number, tax: number, total: number, method: string} | null>(null);
 
   useEffect(() => {
     fetchProducts();
@@ -236,12 +239,21 @@ const Billing = () => {
         }
       }
 
-      generatePDF();
+      // Store completed bill data
+      setCompletedBill({
+        items: billItems,
+        subtotal,
+        tax,
+        total: totalAmount,
+        method: paymentMethod
+      });
+
       toast.success('Payment successful!');
       setShowPaymentDialog(false);
       setBillItems([]);
       setIsDraft(false);
-      navigate('/dashboard');
+      setShowBillSummary(true);
+      fetchProducts(); // Refresh products to show updated stock
     } catch (error) {
       console.error('Error processing checkout:', error);
       toast.error('Failed to process payment');
@@ -507,6 +519,24 @@ const Billing = () => {
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* Bill Summary Dialog */}
+        {completedBill && (
+          <BillSummary
+            open={showBillSummary}
+            onClose={() => {
+              setShowBillSummary(false);
+              setCompletedBill(null);
+            }}
+            items={completedBill.items}
+            subtotal={completedBill.subtotal}
+            tax={completedBill.tax}
+            total={completedBill.total}
+            shopName={shopSettings?.shop_name || 'ManInventory'}
+            shopLocation={shopSettings?.location || ''}
+            paymentMethod={completedBill.method}
+          />
+        )}
       </div>
     </AuthCheck>
   );

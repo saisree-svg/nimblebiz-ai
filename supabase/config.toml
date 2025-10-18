@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.generate-analytics]
 verify_jwt = false
+
+[functions.ai-restock-suggestions]
+verify_jwt = false
