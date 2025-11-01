@@ -61,7 +61,11 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     
     if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY is not configured');
+      console.error('Configuration error: Missing required API key');
+      return new Response(JSON.stringify({ error: 'Service configuration error' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     const prompt = `Analyze this stock/inventory file content and extract product information. 
@@ -84,8 +88,6 @@ serve(async (req) => {
     Be intelligent about extracting data from various formats (CSV, plain text, tables).
     Generate professional descriptions for each product.
     Return ONLY the JSON array, no other text.`;
-
-    console.log('Processing file:', fileName);
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -119,16 +121,22 @@ serve(async (req) => {
       }
       const errorText = await response.text();
       console.error('AI gateway error:', response.status, errorText);
-      throw new Error('AI gateway error');
+      return new Response(JSON.stringify({ error: 'Failed to process file' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     const data = await response.json();
-    console.log('AI response:', data);
     
     const content = data.choices?.[0]?.message?.content;
     
     if (!content) {
-      throw new Error('No content in response');
+      console.error('Invalid AI response structure');
+      return new Response(JSON.stringify({ error: 'Failed to process file' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     // Extract JSON from response (in case AI adds extra text)
@@ -144,7 +152,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in process-stock-file:', error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
+      JSON.stringify({ error: 'An error occurred processing your request' }),
       {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
